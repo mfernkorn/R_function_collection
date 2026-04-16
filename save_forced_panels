@@ -10,7 +10,7 @@ save_forced_panels <- function(plot, plotname, margin_w = 8, margin_h = 6, units
     coords <- str_match(panel_names, "^panel-(\\d+)-(\\d+)")
     coords <- coords[, -1]
     coords <- as.data.frame(apply(coords, 2, as.integer))
-    names(coords) <- c("row", "col")
+    names(coords) <- c("col", "row")
     
     n_cols <- max(coords$col)
     n_rows <- max(coords$row)
