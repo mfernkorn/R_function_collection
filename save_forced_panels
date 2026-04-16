@@ -1,0 +1,49 @@
+# Define function for saving plots with appropriate PDF dimensions
+save_forced_panels <- function(plot, plotname, margin_w = 8, margin_h = 6, units = "cm", ...) {
+  grob <- ggplotGrob(plot)
+  
+  # Get number of panel cols & rows
+  panel_names <- grob$layout$name[grepl("^panel", grob$layout$name)]
+  
+  if (any(grepl("^panel-\\d+-\\d+$", panel_names))) {
+    # Faceted case
+    coords <- str_match(panel_names, "^panel-(\\d+)-(\\d+)")
+    coords <- coords[, -1]
+    coords <- as.data.frame(apply(coords, 2, as.integer))
+    names(coords) <- c("row", "col")
+    
+    n_cols <- max(coords$col)
+    n_rows <- max(coords$row)
+    
+    panel_id <- "panel-1-1"
+    
+  } else {
+    # Non-faceted case
+    n_cols <- 1
+    n_rows <- 1
+    
+    panel_id <- "panel"
+  }
+  
+  # Get enforced panel width & height from grob
+  panel_width_unit  <- grob$widths[unique(grob$layout$l[grob$layout$name == panel_id])]
+  panel_height_unit <- grob$heights[unique(grob$layout$t[grob$layout$name == panel_id])]
+  
+  # Convert to numeric (take first value in case it's a unit vector)
+  panel_width  <- as.numeric(panel_width_unit[1])
+  panel_height <- as.numeric(panel_height_unit[1])
+  
+  # Calculate total plot size
+  total_width  <- n_cols * panel_width  + margin_w
+  total_height <- n_rows * panel_height + margin_h
+  
+  # Save plot
+  ggsave(
+    filename = paste0(format(Sys.Date(), "%y%m%d"), "_", plotname, ".pdf"),
+    plot = plot,
+    width = total_width,
+    height = total_height,
+    units = units,
+    ...
+  )
+}
